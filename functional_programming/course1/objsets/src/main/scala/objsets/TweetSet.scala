@@ -136,7 +136,7 @@ class Empty extends TweetSet {
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
-    left.filterAcc(p, right.filterAcc(p, if (p(elem)) acc.incl(elem) else acc))
+    right.filterAcc(p, left.filterAcc(p, if (p(elem)) acc.incl(elem) else acc))
   }
 
   def contains(x: Tweet): Boolean =
@@ -161,10 +161,11 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.foreach(f)
   }
 
-  def union(that: TweetSet): TweetSet = that.union(right).union(left).incl(elem)
+  def union(that: TweetSet): TweetSet = {
+    left.union(right.union(that.incl(elem)))
+  }
 
   def mostRetweeted: Tweet = {
-
     def max(a: Tweet, b: Tweet) = if (a.retweets > b.retweets) a else b
 
     max(elem, max(if (left.isEmpty) elem else left.mostRetweeted, if (right.isEmpty) elem else right.mostRetweeted))
