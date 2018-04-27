@@ -27,7 +27,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
     def compareMins(melded: H, h1: H, h2: H): Boolean = {
       if (isEmpty(melded))
-        true
+        isEmpty(h1) && isEmpty(h2)
       else {
         val min = findMin(melded)
 
