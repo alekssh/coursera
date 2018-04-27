@@ -22,36 +22,26 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(insert(m, h)) == m
   }
 
-  property("del min") = forAll { (h: H) =>
-    if (!isEmpty(h)) {
-      val m = findMin(h)
-      val h1 = deleteMin(h)
-      isEmpty(h1) || m <= findMin(h1)
+
+  property("elements") = forAll { (a: H, b: H) =>
+
+    def compareMins(melded: H, h1: H, h2: H): Boolean = {
+      if (isEmpty(melded))
+        true
+      else {
+        val min = findMin(melded)
+
+        if (!isEmpty(h1) && min == findMin(h1))
+          compareMins(deleteMin(melded), deleteMin(h1), h2)
+        else if (!isEmpty(h2) && min == findMin(h2))
+          compareMins(deleteMin(melded), h1, deleteMin(h2))
+        else
+          false
+      }
     }
-    else
-      true
+
+    compareMins(meld(a, b), a, b)
   }
-
-  property("meld min") = forAll { (h1: H, h2: H) =>
-    isEmpty(h1) || isEmpty(h2) ||
-      findMin(meld(h1, h2)) == math.min(findMin(h1), findMin(h2))
-  }
-
-  property("sorting") = forAll { (h: H) =>
-    def isSorted(h1: H, min: Int): Boolean = {
-      isEmpty(h1) || ((findMin(h1) >= min) && isSorted(deleteMin(h1), findMin(h1)))
-    }
-    isSorted(h, Int.MinValue)
-  }
-
-
-
-
-  /*
-    property("meld empty") = forAll { (h: H) =>
-      if(isEmpty(h)) isEmpty(meld(empty, h)) else !isEmpty(meld(empty, h))
-    }
-  */
 
 
 }
