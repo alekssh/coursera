@@ -47,7 +47,7 @@ class TweetSetSuite extends FunSuite {
 
   test("union: set4c and set4d") {
     new TestSets {
-      assert(size(set4c.union(set4d)) === 4)
+      assert(size(set4c.union(set4d))   === 4)
     }
   }
 
