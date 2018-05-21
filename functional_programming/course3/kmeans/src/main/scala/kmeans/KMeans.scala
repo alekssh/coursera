@@ -1,10 +1,10 @@
 package kmeans
 
+import org.scalameter._
+
 import scala.annotation.tailrec
 import scala.collection._
 import scala.util.Random
-import org.scalameter._
-import common._
 
 class KMeans {
 
@@ -43,7 +43,7 @@ class KMeans {
   }
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    ???
+    if (points.nonEmpty) points.groupBy(point => findClosest(point, means)) else means.map((_, List())).toMap
   }
 
   def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean else {
@@ -59,29 +59,36 @@ class KMeans {
   }
 
   def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    ???
+    for (mean <- oldMeans) yield findAverage(mean, classified.getOrElse(mean, List()))
   }
 
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    ???
+    oldMeans.zip(newMeans).forall { case (oldMean, newMean) => oldMean.squareDistance(newMean) <= eta }
   }
 
   @tailrec
   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
-    if (???) kMeans(???, ???, ???) else ??? // your implementation need to be tail recursive
+    val updatedMeans = update(classify(points, means), means)
+    if (!converged(eta)(means, updatedMeans))
+      kMeans(points, updatedMeans, eta)
+    else
+      updatedMeans // your implementation need to be tail recursive
   }
 }
 
 /** Describes one point in three-dimensional space.
- *
- *  Note: deliberately uses reference equality.
- */
-class Point(val x: Double, val y: Double, val z: Double) {
+  *
+  * Note: deliberately uses reference equality.
+  */
+case class Point(val x: Double, val y: Double, val z: Double) {
   private def square(v: Double): Double = v * v
+
   def squareDistance(that: Point): Double = {
-    square(that.x - x)  + square(that.y - y) + square(that.z - z)
+    square(that.x - x) + square(that.y - y) + square(that.z - z)
   }
+
   private def round(v: Double): Double = (v * 100).toInt / 100.0
+
   override def toString = s"(${round(x)}, ${round(y)}, ${round(z)})"
 }
 
@@ -93,7 +100,7 @@ object KMeansRunner {
     Key.exec.maxWarmupRuns -> 40,
     Key.exec.benchRuns -> 25,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) withWarmer (new Warmer.Default)
 
   def main(args: Array[String]) {
     val kMeans = new KMeans()
