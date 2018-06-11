@@ -9,10 +9,11 @@ import scala.math._
   */
 object Visualization {
 
+  private val width = 360
+  private val height = 180
   private val earthRadius = 6371
-
-  private val image_w = 360
-  private val image_h = 180
+  private val power = 2
+  private val alpha = 255
 
   /**
     * @param temperatures Known temperatures: pairs containing a location and the temperature at this location
@@ -20,14 +21,13 @@ object Visualization {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Temperature)], location: Location): Temperature = {
-    val p = 2
 
     val tempWithDistance = temperatures.map { case (l, t) => (t, distance(l, location)) }
 
     val closePointTemperature: Option[Double] = tempWithDistance.find(_._2 <= 1).map(_._1)
 
     closePointTemperature.getOrElse {
-      val tempWithReverseDistance = tempWithDistance.map { case (t, d) => (t, 1 / pow(d, p)) }
+      val tempWithReverseDistance = tempWithDistance.map { case (t, d) => (t, 1 / pow(d, power)) }
       val (d1, d2) = tempWithReverseDistance.foldLeft((0.0, 0.0))((sum, item) => (sum._1 + item._1 * item._2, sum._2 + item._2))
       d1 / d2
     }
@@ -83,7 +83,7 @@ object Visualization {
   }
 
   private def linearInterpolation(x0: Temperature, y0: Int, x1: Temperature, y1: Int, x: Temperature): Int = {
-    round((y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0)).toInt
+    round(y0 + (y1-y0) * (x - x0) / (x1 - x0)).toInt
   }
 
   /**
@@ -93,15 +93,15 @@ object Visualization {
     */
   def visualize(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
 
-    val pixels = new Array[Pixel](image_w * image_h)
+    val pixels = new Array[Pixel](width * height)
 
-    for (y <- 0 until image_h; x <- 0 until image_w) {
+    for (y <- 0 until height; x <- 0 until width) {
       val temperature = predictTemperature(temperatures, Location(90 - y, x - 180))
       val color = interpolateColor(colors, temperature)
-      pixels.update(y * image_w + x, Pixel(color.red, color.green, color.blue, 255))
+      pixels.update(y * width + x, Pixel(color.red, color.green, color.blue, alpha))
     }
 
-    Image(image_w, image_h, pixels)
+    Image(width, height, pixels)
   }
 
 }

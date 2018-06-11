@@ -2,6 +2,7 @@ package observatory
 
 import java.time.LocalDate
 
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
@@ -12,6 +13,8 @@ import org.apache.spark.sql.types._
 object Extraction {
 
   val spark: SparkSession = SparkSession.builder().appName("observatory").config("spark.master", "local").getOrCreate()
+
+  Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
 
   import spark.implicits._
 
@@ -46,8 +49,6 @@ object Extraction {
 
     val joined = temperatures.join(stations, Seq("stn", "wban"))
       .select("month", "day", "lat", "lon", "temperature")
-
-    joined.show()
 
     val transformed = joined.rdd.map(row =>
       (LocalDate.of(year, row.getInt(0), row.getInt(1)), Location(row.getDouble(2), row.getDouble(3)), toCelcium(row.getDouble(4)))
