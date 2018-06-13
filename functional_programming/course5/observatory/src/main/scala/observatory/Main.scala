@@ -4,12 +4,12 @@ import java.nio.file.{Files, Paths}
 
 object Main extends App {
 
-  //generateTemperatures()
+  generateTemperatures()
   generateDeviations()
 
   def generateTemperatures() = {
 
-    for (year <- 1975 to 1980) {
+    for (year <- Config.temperaturesRange) {
       val temperatures = Extraction.locateTemperatures(year, "/stations.csv", s"/${year}.csv")
 
       val locationToTemperature = Extraction.locationYearlyAverageRecords(temperatures)
