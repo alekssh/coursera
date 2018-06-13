@@ -14,7 +14,10 @@ object Manipulation {
     */
   def makeGrid(temperatures: Iterable[(Location, Temperature)]): GridLocation => Temperature = {
     val grid = new mutable.HashMap[GridLocation, Temperature]
-    (gridLocation: GridLocation) => grid.getOrElseUpdate(gridLocation, Visualization.predictTemperature(temperatures, gridLocation))
+    (gridLocation: GridLocation) =>
+      grid.getOrElseUpdate(gridLocation,
+        Visualization.predictTemperature(temperatures, gridLocation)
+      )
   }
 
 
@@ -32,7 +35,8 @@ object Manipulation {
       gridAverages.getOrElseUpdate(gridLocation, {
         val locationTemperatures = gridTemperatures.map(_ (gridLocation))
         locationTemperatures.sum / locationTemperatures.size
-      })
+      }
+      )
     }
   }
 

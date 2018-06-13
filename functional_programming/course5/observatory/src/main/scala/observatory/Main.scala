@@ -4,34 +4,56 @@ import java.nio.file.{Files, Paths}
 
 object Main extends App {
 
-  val year = 2015
+  //generateTemperatures()
+  generateDeviations()
 
-  val temperatures = Extraction.locateTemperatures(year, "/stations.csv", s"/${year}.csv")
+  def generateTemperatures() = {
 
-  val locationToTemperature = Extraction.locationYearlyAverageRecords(temperatures)
+    for (year <- 1975 to 1980) {
+      val temperatures = Extraction.locateTemperatures(year, "/stations.csv", s"/${year}.csv")
 
-  val colors = List(
-    (60.0, Color(255, 255, 555)),
-    (32.0, Color(255, 0, 0)),
-    (12.0, Color(255, 255, 0)),
-    (0.0, Color(0, 255, 555)),
-    (-15.0, Color(0, 0, 555)),
-    (-27.0, Color(255, 0, 555)),
-    (-50.0, Color(33, 0, 107)),
-    (-60.0, Color(0, 0, 0))
-  )
+      val locationToTemperature = Extraction.locationYearlyAverageRecords(temperatures)
 
-  //val image = Visualization.visualize(locationToTemperature, colors)
-  //image.output("target/image.png")
+      Interaction.generateTiles[AnyRef](
+        List((year, None)),
+        (year: Year, tile: Tile, data: AnyRef) => {
+          val path = Paths.get(s"${Config.outputDir}/${LayerName.Temperatures.id}/${year}/${tile.zoom}/${tile.x}-${tile.y}.png")
+          Files.createDirectories(path.getParent)
 
+          Interaction.tile(locationToTemperature, Colors.temperatures(), tile).output(path)
 
-  Interaction.generateTiles[AnyRef](
-    List((year, None)),
-    (year: Year, tile: Tile, data: AnyRef) => {
-      val path = Paths.get(s"target/temperatures/${year}/${tile.zoom}/${tile.x}-${tile.y}.png")
-      Files.createDirectories(path.getParent)
-      Interaction.tile(locationToTemperature, colors, tile).output(path)
+          //Visualization2.visualizeGrid(Manipulation.makeGrid(locationToTemperature), colors, tile).output(path)
+        }
+      )
+
     }
-  )
+  }
+
+
+  def generateDeviations() {
+
+
+    val temperaturess = for (year <- Config.normalsRange)
+      yield Extraction.locationYearlyAverageRecords(Extraction.locateTemperatures(year, "/stations.csv", s"/${year}.csv"))
+
+    val normals = Manipulation.average(temperaturess)
+
+    for (year <- Config.deviationsRange) {
+
+      val deviations = Manipulation.deviation(
+        Extraction.locationYearlyAverageRecords(Extraction.locateTemperatures(year, "/stations.csv", s"/${year}.csv")),
+        normals)
+
+      Interaction.generateTiles[AnyRef](
+        List((year, None)),
+        (year: Year, tile: Tile, data: AnyRef) => {
+          val path = Paths.get(s"${Config.outputDir}/${LayerName.Deviations.id}/${year}/${tile.zoom}/${tile.x}-${tile.y}.png")
+          Files.createDirectories(path.getParent)
+          Visualization2.visualizeGrid(deviations, Colors.deviations(), tile).output(path)
+        }
+      )
+
+    }
+  }
 
 }

@@ -17,7 +17,7 @@ object Interaction {
 
   private val alpha = 127
 
-  val timeout = 3600 seconds
+  val timeout = 36000 seconds
 
   val pixZoom = round(log(width) / log(2)).toInt
 
@@ -49,7 +49,7 @@ object Interaction {
     val pixels = subTiles.map(tileLocation).map(Visualization.predictTemperature(temperatures, _))
       .map(Visualization.interpolateColor(colors, _)).map(color => Pixel(color.red, color.green, color.blue, alpha))
 
-    Image(width, height, pixels.toArray) //.scaleTo(final_width, final_height)
+    Image(width, height, pixels.toArray).scaleTo(final_width, final_height)
   }
 
   /**
