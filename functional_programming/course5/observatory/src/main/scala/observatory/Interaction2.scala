@@ -19,7 +19,7 @@ object Interaction2 {
   def availableLayers: Seq[Layer] = {
     Seq(
       Layer(LayerName.Temperatures, Colors.temperatures(), Config.temperaturesRange),
-      Layer(LayerName.Deviations, Colors.temperatures(), Config.deviationsRange)
+      Layer(LayerName.Deviations, Colors.deviations(), Config.deviationsRange)
     )
   }
 
